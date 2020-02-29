@@ -7,7 +7,6 @@ import threading
 import time
 import random
 
-
 ##############################################################################
 # Game grid setup
 imax = 4
@@ -33,6 +32,35 @@ def printGrid():
     print
     for i in range(0,imax):
         print (grid[i])
+
+###############################################################################
+def stealPawns(i, j, pName):
+    global grid, imax, jmax
+    pawn = grid[i][j]
+    otherPawn = 'O' if pawn == 'X' else 'X'
+
+    # Check the 4 pawns opposite to the one just added at (i,j),
+    #  and steal the pawns in between if the symbols match
+    if i < imax - 2 and grid[i + 2][j] == pawn and grid[i + 1][j] == otherPawn:
+        grid[i + 1][j] = pawn
+        print(pName + " has stolen pawn " + otherPawn + " at " \
+              + "[" + str(i + 1) + ", " + str(j) + "]!!!")
+
+    if i > 1 and grid[i - 2][j] == pawn and grid[i - 1][j] == otherPawn:
+        grid[i - 1][j] = pawn
+        print(pName + " has stolen pawn " + otherPawn + " at " \
+              + "[" + str(i - 1) + ", " + str(j) + "]!!!")
+
+    if j < jmax - 2 and grid[i][j + 2] == pawn and grid[i][j + 1] == otherPawn:
+        grid[i][j + 1] = pawn
+        print(pName + " has stolen pawn " + otherPawn + " at " \
+              + "[" + str(i) + ", " + str(j + 1) + "]!!!")
+
+
+    if j > 1 and grid[i][j - 2] == pawn and grid[i][j - 1] == otherPawn:
+        grid[i][j - 1] = pawn
+        print(pName + " has stolen pawn " + otherPawn + " at " \
+              + "[" + str(i) + ", " + str(j - 1) + "]!!!")
 
 ###############################################################################
 class Player(threading.Thread):
@@ -96,9 +124,11 @@ class Player(threading.Thread):
                             # player has entered a line, column couple
                             x = eval(self.move)
                             if ((type(x) == list or type(x) == tuple) and len(x) == 2) \
-                                    and (0 <= x[0] < imax) and (0 <= x[1] < jmax) \
-                                        and grid[x[0]][x[1]] == ' ':
+                               and (0 <= x[0] < imax) and (0 <= x[1] < jmax) \
+                               and grid[x[0]][x[1]] == ' ':
                                 grid[x[0]][x[1]] = self.pawn
+                                # Perform stealing checks and update grid
+                                stealPawns(x[0], x[1], self.getName())
                                 break
                             else:
                                 raise Exception()
@@ -175,7 +205,6 @@ while True:
         first = random.randint(0, nbPlayers - 1)
         break
 
-
 print
 print ("=====> Player " + str(first+1) + " plays first")
 
@@ -204,7 +233,7 @@ for i in range(0, nbPlayers):
 # ##############################
 # # Game loop
 
-t=time.time()
+t = time.time()
 while True:
     # waiting for a player to play its turn
     while True:
@@ -226,7 +255,6 @@ while True:
     # New round detection
     roundNum = (moveCounter / nbPlayers) + 1
     nextPlayer = moveCounter % nbPlayers
-    ch=""
     if nextPlayer == 0:
         print
         print (u"=====> Starting round #" + str(roundNum))
