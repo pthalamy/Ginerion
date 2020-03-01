@@ -19,6 +19,12 @@ for i in range(0,imax):
     for j in range(0,jmax):
         grid[i].append(' ')
 
+# Coloring setup
+gridStyle = colored.attr("bold") + colored.fg("white")
+xStyle = colored.bg("red") + colored.fg("white")
+oStyle = colored.bg("blue") + colored.fg("white")
+
+
 ###############################################################################
 def gridIsFull():
     global grid,imax,jmax
@@ -35,7 +41,7 @@ def isInGrid(i, j):
 
 ###############################################################################
 def drawLine(style):
-    global grid, jmax
+    global grid, jmax, gridStyle
 
     print(stylize(f"\u2014", style), end = '')
     for j in range(0, jmax):
@@ -44,14 +50,7 @@ def drawLine(style):
 
 
 def printGrid():
-    global grid, imax, jmax
-
-    gridStyle = colored.attr("bold") + colored.fg("white")
-    # xStyle = colored.attr("bold") + colored.fg("red") #+ colored.fg("white")
-    # oStyle = colored.attr("bold") + colored.fg("blue") #+ colored.fg("white")
-
-    xStyle = colored.bg("red") + colored.fg("white")
-    oStyle = colored.bg("blue") + colored.fg("white")
+    global grid, imax, jmax, gridStyle, oStyle, xStyle
 
     print()
     drawLine(gridStyle)
