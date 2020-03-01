@@ -24,7 +24,6 @@ gridStyle = colored.attr("bold") + colored.fg("white")
 xStyle = colored.bg("red") + colored.fg("white")
 oStyle = colored.bg("blue") + colored.fg("white")
 
-
 ###############################################################################
 def gridIsFull():
     global grid,imax,jmax
@@ -70,6 +69,16 @@ def printGrid():
 
 def printCell(i, j):
     return "[" + str(i) + ", " + str(j) + "]"
+
+###############################################################################
+def announceWinner(path):
+    global grid, imax, jmax, gridStyle, oStyle, xStyle
+    print()
+    print(stylize(f"{grid[path[0][0]][path[0][1]]} is the winner with a score of {len(path)}!", xStyle if grid[path[0][0]][path[0][1]] == 'X' else oStyle))
+
+    print(stylize(f"Winning path: {path}",
+                  xStyle if grid[path[0][0]][path[0][1]] == 'X' else oStyle))
+
 ###############################################################################
 def stealPawns(i, j, pName):
     global grid, imax, jmax
@@ -366,17 +375,16 @@ while True:
     # end of game condition
     if gridIsFull():
         path = resolveWinner()
-        print(f"{grid[path[0][0]][path[0][1]]} is the winner")
-        print(f"Winning path: {path}")
+        announceWinner(path)
         mutex.release()
         break
 
     # New round detection
     roundNum = round((moveCounter / nbPlayers) + 1)
     nextPlayer = moveCounter % nbPlayers
-    if nextPlayer == 0:
-        print
-        print (u"=====> Starting round #" + str(roundNum))
+    # if nextPlayer == 0:
+    #     print
+    #     print (u"=====> Starting round #" + str(roundNum))
 
     # Allow the next player to play its turn
     readyToPlay = True
@@ -385,8 +393,8 @@ while True:
 
 #############################
 # Game end
-print
-print ("Game over!")
+# print
+# print ("Game over!")
 
 # stop all threads
 for i in range(0, nbPlayers):
@@ -401,6 +409,4 @@ for i in range(0, nbPlayers):
 
 
 print
-print (u"Come back soon for another game of Ginerion!")
-
-printGrid()
+#print (u"Come back soon for another game of Ginerion!")
