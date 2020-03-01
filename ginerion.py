@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from enum import Enum
+import colored
+from colored import stylize
 
 import threading
 import time
@@ -32,11 +34,40 @@ def isInGrid(i, j):
     return 0 <= i < imax and 0 <= j < jmax
 
 ###############################################################################
+def drawLine(style):
+    global grid, jmax
+
+    print(stylize(f"\u2014", style), end = '')
+    for j in range(0, jmax):
+        print(stylize(f"\u2014\u2014\u2014\u2014", style), end = '')
+    print()
+
+
 def printGrid():
-    global grid,imax
-    print
-    for i in range(0,imax):
-        print (grid[i])
+    global grid, imax, jmax
+
+    gridStyle = colored.attr("bold") + colored.fg("white")
+    # xStyle = colored.attr("bold") + colored.fg("red") #+ colored.fg("white")
+    # oStyle = colored.attr("bold") + colored.fg("blue") #+ colored.fg("white")
+
+    xStyle = colored.bg("red") + colored.fg("white")
+    oStyle = colored.bg("blue") + colored.fg("white")
+
+    print()
+    drawLine(gridStyle)
+
+    for i in range(0, imax):
+        for j in range(0, jmax):
+            # print(stylize("| ", gridStyle), end = '')
+            print(stylize("|", gridStyle), end = '')
+            if grid[i][j] == ' ':
+                print("   ", end = '')
+            else:
+                print(stylize(f" {grid[i][j]} ",
+                              xStyle if grid[i][j] == 'X' else oStyle), end = '')
+        print(stylize(f"|", gridStyle))
+
+        drawLine(gridStyle)
 
 def printCell(i, j):
     return "[" + str(i) + ", " + str(j) + "]"
@@ -342,7 +373,7 @@ while True:
         break
 
     # New round detection
-    roundNum = (moveCounter / nbPlayers) + 1
+    roundNum = round((moveCounter / nbPlayers) + 1)
     nextPlayer = moveCounter % nbPlayers
     if nextPlayer == 0:
         print
@@ -366,7 +397,7 @@ for i in range(0, nbPlayers):
 for i in range(0, nbPlayers):
     players[i].join()
     mutex.acquire()
-    print ("end of thread " + players[i].getName())
+    #print ("end of thread " + players[i].getName())
     mutex.release()
 
 
