@@ -27,12 +27,19 @@ def gridIsFull():
     return True
 
 ###############################################################################
+def isInGrid(i, j):
+    global grid, imax, jmax
+    return 0 <= i < imax and 0 <= j < jmax
+
+###############################################################################
 def printGrid():
     global grid,imax
     print
     for i in range(0,imax):
         print (grid[i])
 
+def printCell(i, j):
+    return "[" + str(i) + ", " + str(j) + "]"
 ###############################################################################
 def stealPawns(i, j, pName):
     global grid, imax, jmax
@@ -61,6 +68,70 @@ def stealPawns(i, j, pName):
         grid[i][j - 1] = pawn
         print(pName + " has stolen pawn " + otherPawn + " at " \
               + "[" + str(i) + ", " + str(j - 1) + "]!!!")
+
+###############################################################################
+def randomGridInitialization():
+    global grid, imax, jmax
+    for i in range(0, imax):
+        for j in range(0, jmax):
+            if bool(random.getrandbits(1)) == True:
+                grid[i][j] = 'O'
+            else:
+                grid[i][j] = 'X'
+
+###############################################################################
+def left(i, j):
+    return [i - 1, j]
+
+def right(i, j):
+    return [i + 1, j]
+
+def top(i, j):
+    return [i, j + 1]
+
+def bottom(i, j):
+    return [i, j - 1]
+
+def resolveWinner():
+    global grid,imax,jmax
+    # Resolve winner - DFS-style, considering all paths
+    longestPath = []
+    for i in range(0, imax):
+        for j in range(0, jmax):
+            pawn = grid[i][j]
+
+            # print(f"Exploring grid from {printCell(i, j)}: {pawn}")
+
+            pathCandidate = explorePaths(i, j, pawn, [])
+            # print(f"pathCandidate: {pathCandidate} - l: {len(pathCandidate)}")
+
+            if len(pathCandidate) > len(longestPath):
+                longestPath = pathCandidate
+
+    # print(f"longestPath: {longestPath} - l: {len(longestPath)}")
+    # print(f"{grid[longestPath[0][0]][longestPath[0][1]]} is the winner")
+
+    return longestPath
+
+def explorePaths(i, j, pawn, path): # returns longestPath
+    path += [[i,j]]
+    paths = []
+    longestPath = path
+
+    # print(path)
+    # tmp = input("continue?")
+
+    for p in [left(i,j), right(i,j), top(i,j), bottom(i,j)]:
+        if isInGrid(p[0], p[1]) \
+           and grid[p[0]][p[1]] == pawn \
+           and not p in path:
+            # print (f"Moving to [{p[0]},{p[1]}]")
+            pathCandidate = explorePaths(p[0], p[1], pawn, path[:])
+            if len(pathCandidate) > len(longestPath):
+                longestPath = pathCandidate
+
+    return longestPath
+
 
 ###############################################################################
 class Player(threading.Thread):
@@ -154,6 +225,7 @@ class Player(threading.Thread):
 
 ###############################################################################
 nbPlayers = 2
+testMode = False
 
 class PlayerType(Enum):
     COMPUTER = 0,
@@ -166,6 +238,7 @@ while True:
     print (u"[1]: 2 humans play together")
     print (u"[2]: 1 computer plays against 1 human player")
     print (u"[3]: the computer plays against itself")
+    print (u"[4]: generates a random grid")
     x = input("What type of game do you wish to play? [1 by default]: ")
     if x == '1' or x == '':
         playerTypes = [1,1]
@@ -180,6 +253,20 @@ while True:
         playerTypes = [0,0]
         print('Games with computer are not supported yet.')
         exit()
+
+
+    if x == '4':
+        testMode = True
+        break
+
+if testMode:
+    randomGridInitialization()
+    printGrid()
+    path = resolveWinner()
+    print(f"==> {grid[path[0][0]][path[0][1]]} is the winner")
+    print(f"==> {path}")
+    exit()
+
 
 # Assign a pawn type to each player
 pawns = ['O','X']
@@ -248,7 +335,9 @@ while True:
 
     # end of game condition
     if gridIsFull():
-        print
+        path = resolveWinner()
+        print(f"{grid[path[0][0]][path[0][1]]} is the winner")
+        print(f"Winning path: {path}")
         mutex.release()
         break
 
