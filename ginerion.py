@@ -23,6 +23,7 @@ for i in range(0,imax):
 gridStyle = colored.attr("bold") + colored.fg("white")
 xStyle = colored.bg("red") + colored.fg("white")
 oStyle = colored.bg("blue") + colored.fg("white")
+pathStyle = colored.bg("green") + colored.fg("white")
 
 ###############################################################################
 def gridIsFull():
@@ -48,7 +49,7 @@ def drawLine(style):
     print()
 
 
-def printGrid():
+def printGrid(path = []):
     global grid, imax, jmax, gridStyle, oStyle, xStyle
 
     print()
@@ -58,11 +59,15 @@ def printGrid():
         for j in range(0, jmax):
             # print(stylize("| ", gridStyle), end = '')
             print(stylize("|", gridStyle), end = '')
-            if grid[i][j] == ' ':
-                print("   ", end = '')
+
+            if [i,j] in path:
+                print(stylize(f" {grid[i][j]} ", pathStyle), end = '')
             else:
-                print(stylize(f" {grid[i][j]} ",
-                              xStyle if grid[i][j] == 'X' else oStyle), end = '')
+                if grid[i][j] == ' ':
+                    print("   ", end = '')
+                else:
+                    print(stylize(f" {grid[i][j]} ",
+                                  xStyle if grid[i][j] == 'X' else oStyle), end = '')
         print(stylize(f"|", gridStyle))
 
         drawLine(gridStyle)
@@ -73,11 +78,14 @@ def printCell(i, j):
 ###############################################################################
 def announceWinner(path):
     global grid, imax, jmax, gridStyle, oStyle, xStyle
+
     print()
     print(stylize(f"{grid[path[0][0]][path[0][1]]} is the winner with a score of {len(path)}!", xStyle if grid[path[0][0]][path[0][1]] == 'X' else oStyle))
 
     print(stylize(f"Winning path: {path}",
                   xStyle if grid[path[0][0]][path[0][1]] == 'X' else oStyle))
+
+    printGrid(path)
 
 ###############################################################################
 def stealPawns(i, j, pName):
