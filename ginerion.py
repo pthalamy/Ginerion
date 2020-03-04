@@ -13,7 +13,7 @@ import random
 # Game grid setup
 imax = 4
 jmax = 4
-grid=[]
+grid = []
 for i in range(0,imax):
     grid.append([])
     for j in range(0,jmax):
@@ -21,9 +21,10 @@ for i in range(0,imax):
 
 # Coloring setup
 gridStyle = colored.attr("bold") + colored.fg("white")
-xStyle = colored.bg("red") + colored.fg("white")
-oStyle = colored.bg("blue") + colored.fg("white")
+pawnStyle = [[colored.bg("blue") + colored.fg("white")],
+             [colored.bg("red") + colored.fg("white")]]
 pathStyle = colored.bg("green") + colored.fg("white")
+drawStyle = colored.attr("bold") + colored.fg("white")
 
 ###############################################################################
 def gridIsFull():
@@ -49,8 +50,8 @@ def drawLine(style):
     print()
 
 
-def printGrid(path = []):
-    global grid, imax, jmax, gridStyle, oStyle, xStyle
+def printGrid(stolen = [], path = []):
+    global grid, imax, jmax, gridStyle, pawns, pawnStyle
 
     print()
     drawLine(gridStyle)
@@ -66,8 +67,13 @@ def printGrid(path = []):
                 if grid[i][j] == ' ':
                     print("   ", end = '')
                 else:
-                    print(stylize(f" {grid[i][j]} ",
-                                  xStyle if grid[i][j] == 'X' else oStyle), end = '')
+                    if [i,j] in stolen:
+                        print(stylize(stylize(f" {grid[i][j]} ",
+                                              pawnStyle[pawns.index(grid[i][j])]),
+                                      colored.attr("blink")), end = '')
+                    else:
+                        print(stylize(f" {grid[i][j]} ", pawnStyle[pawns.index(grid[i][j])]),
+                              end = '')
         print(stylize(f"|", gridStyle))
 
         drawLine(gridStyle)
@@ -77,45 +83,64 @@ def printCell(i, j):
 
 ###############################################################################
 def announceWinner(path):
-    global grid, imax, jmax, gridStyle, oStyle, xStyle
+    global grid, imax, jmax, gridStyle, pawns, pawnStyle
+
+    pawn = grid[path[0][0]][path[0][1]]
+    print()
+    print(stylize(f"{pawn} is the winner with a score of {len(path)}!",
+                  pawnStyle[pawns.index(pawn)]), end = '')
+
+    # print(stylize(f"Winning path: {path}",
+    #               xStyle if grid[path[0][0]][path[0][1]] == 'X' else oStyle))
+
+    printGrid([], path)
+
+def announceDraw(longestPath, allPaths):
+    global grid, imax, jmax, drawStyle, pawns
 
     print()
-    print(stylize(f"{grid[path[0][0]][path[0][1]]} is the winner with a score of {len(path)}!", xStyle if grid[path[0][0]][path[0][1]] == 'X' else oStyle))
+    print(stylize(f"The game ended in a draw with a score of {len(longestPath)}!",
+                  drawStyle))
 
-    print(stylize(f"Winning path: {path}",
-                  xStyle if grid[path[0][0]][path[0][1]] == 'X' else oStyle))
-
-    printGrid(path)
+    allLPCells = []
+    for i in range(0, len(pawns)):
+        if len(longestPath) == len(allPaths[i]):
+            allLPCells += allPaths[i]
+    printGrid([], allLPCells)
 
 ###############################################################################
 def stealPawns(i, j, pName):
-    global grid, imax, jmax
+    global grid, imax, jmax, pawns, pawnStyle, stolen
     pawn = grid[i][j]
-    otherPawn = 'O' if pawn == 'X' else 'X'
+    stolen = []
 
     # Check the 4 pawns opposite to the one just added at (i,j),
     #  and steal the pawns in between if the symbols match
-    if i < imax - 2 and grid[i + 2][j] == pawn and grid[i + 1][j] == otherPawn:
+    if i < imax - 2 and grid[i + 2][j] == pawn and grid[i + 1][j] != ' ':
+        print(stylize(f"{pName} has stolen pawn {grid[i + 1][j]} at [{i + 1},{j}] !",pawnStyle[pawns.index(grid[i + 1][j])]))
         grid[i + 1][j] = pawn
-        print(pName + " has stolen pawn " + otherPawn + " at " \
-              + "[" + str(i + 1) + ", " + str(j) + "]!!!")
+        stolen.append([i + 1, j])
 
-    if i > 1 and grid[i - 2][j] == pawn and grid[i - 1][j] == otherPawn:
+    if i > 1 and grid[i - 2][j] == pawn and grid[i - 1][j] != ' ':
+        print(stylize(f"{pName} has stolen pawn {grid[i - 1][j]} at [{i - 1},{j}] !",
+                      pawnStyle[pawns.index(grid[i - 1][j])]))
         grid[i - 1][j] = pawn
-        print(pName + " has stolen pawn " + otherPawn + " at " \
-              + "[" + str(i - 1) + ", " + str(j) + "]!!!")
+        stolen.append([i - 1, j])
 
-    if j < jmax - 2 and grid[i][j + 2] == pawn and grid[i][j + 1] == otherPawn:
+    if j < jmax - 2 and grid[i][j + 2] == pawn and grid[i][j + 1] != ' ':
+        print(stylize(f"{pName} has stolen pawn {grid[i][j + 1]} at [{i},{j + 1}] !",
+                      pawnStyle[pawns.index(grid[i][j + 1])]))
         grid[i][j + 1] = pawn
-        print(pName + " has stolen pawn " + otherPawn + " at " \
-              + "[" + str(i) + ", " + str(j + 1) + "]!!!")
+        stolen.append([i, j + 1])
 
 
-    if j > 1 and grid[i][j - 2] == pawn and grid[i][j - 1] == otherPawn:
+    if j > 1 and grid[i][j - 2] == pawn and grid[i][j - 1] != ' ':
+        print(stylize(f"{pName} has stolen pawn {grid[i][j - 1]} at [{i},{j - 1}] !",
+                      pawnStyle[pawns.index(grid[i][j - 1])]))
         grid[i][j - 1] = pawn
-        print(pName + " has stolen pawn " + otherPawn + " at " \
-              + "[" + str(i) + ", " + str(j - 1) + "]!!!")
+        stolen.append([i, j - 1])
 
+    return stolen
 ###############################################################################
 def randomGridInitialization():
     global grid, imax, jmax
@@ -140,9 +165,13 @@ def bottom(i, j):
     return [i, j - 1]
 
 def resolveWinner():
-    global grid,imax,jmax
+    global grid,imax,jmax, pawns,pawnStyle
     # Resolve winner - DFS-style, considering all paths
     longestPath = []
+    allPaths = [] # All longest paths, indexed by pawn
+    for pn in pawns:
+          allPaths.append([])
+
     for i in range(0, imax):
         for j in range(0, jmax):
             pawn = grid[i][j]
@@ -155,10 +184,18 @@ def resolveWinner():
             if len(pathCandidate) > len(longestPath):
                 longestPath = pathCandidate
 
+            if len(pathCandidate) > len(allPaths[pawns.index(pawn)]):
+                allPaths[pawns.index(pawn)] = pathCandidate
+
     # print(f"longestPath: {longestPath} - l: {len(longestPath)}")
     # print(f"{grid[longestPath[0][0]][longestPath[0][1]]} is the winner")
 
-    return longestPath
+    lpCount = 0
+    for i in range(0, len(pawns)):
+        if len(allPaths[i]) == len(longestPath):
+          lpCount += 1
+
+    return (lpCount != 1), longestPath, allPaths
 
 def explorePaths(i, j, pawn, path): # returns longestPath
     path += [[i,j]]
@@ -238,22 +275,22 @@ class Player(threading.Thread):
                     ch=self.getName() + " plays cell (e.g., '[0,2]'): "
                     while True:
                         self.move = input(ch)
-                        try:
-                            # player has entered a line, column couple
-                            x = eval(self.move)
-                            if ((type(x) == list or type(x) == tuple) and len(x) == 2) \
-                               and (0 <= x[0] < imax) and (0 <= x[1] < jmax) \
-                               and grid[x[0]][x[1]] == ' ':
-                                grid[x[0]][x[1]] = self.pawn
-                                # Perform stealing checks and update grid
-                                stealPawns(x[0], x[1], self.getName())
-                                break
-                            else:
-                                raise Exception()
-                        except:
-                            # ici, le choix entré n'est pas correct
-                            print("--> incorrect move. FORMAT: 'line, col' or '[line, col]'")
-                            pass
+                        # try:
+                        # player has entered a line, column couple
+                        x = eval(self.move)
+                        if ((type(x) == list or type(x) == tuple) and len(x) == 2) \
+                           and (0 <= x[0] < imax) and (0 <= x[1] < jmax) \
+                           and grid[x[0]][x[1]] == ' ':
+                            grid[x[0]][x[1]] = self.pawn
+                            # Perform stealing checks and update grid
+                            stolen = stealPawns(x[0], x[1], self.getName())
+                            break
+                        else:
+                            raise Exception()
+                        # except:
+                        #     # ici, le choix entré n'est pas correct
+                        #     print("--> incorrect move. FORMAT: 'line, col' or '[line, col]'")
+                        #     pass
 
             ##### => end of player turn
 
@@ -273,6 +310,7 @@ class Player(threading.Thread):
 ###############################################################################
 nbPlayers = 2
 testMode = False
+pawns = ['O','X']
 
 class PlayerType(Enum):
     COMPUTER = 0,
@@ -301,7 +339,6 @@ while True:
         print('Games with computer are not supported yet.')
         exit()
 
-
     if x == '4':
         testMode = True
         break
@@ -309,14 +346,15 @@ while True:
 if testMode:
     randomGridInitialization()
     printGrid()
-    path = resolveWinner()
-    print(f"==> {grid[path[0][0]][path[0][1]]} is the winner")
-    print(f"==> {path}")
+    draw, longestPath, allPaths = resolveWinner()
+    if draw:
+        announceDraw(longestPath, allPaths)
+    else:
+        announceWinner(longestPath)
     exit()
 
 
 # Assign a pawn type to each player
-pawns = ['O','X']
 print
 print (u"=====> player 1 has the 'O' pawn, the other the 'X' pawn")
 
@@ -353,6 +391,9 @@ moveCounter = -1
 # Flag used to yield back the execution to the main program after a move is played
 readyToPlay = False
 
+# List of stolen cells at the current turn
+stolen = []
+
 # Creation of the list of players
 players = []
 for i in range(0,nbPlayers):
@@ -378,12 +419,15 @@ while True:
         mutex.release()
 
     # print the updated game grid
-    printGrid()
+    printGrid(stolen)
 
     # end of game condition
     if gridIsFull():
-        path = resolveWinner()
-        announceWinner(path)
+        draw, longestPath, allPaths = resolveWinner()
+        if draw:
+            announceDraw(longestPath, allPaths)
+        else:
+            announceWinner(longestPath)
         mutex.release()
         break
 
