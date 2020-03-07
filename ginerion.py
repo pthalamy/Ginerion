@@ -152,6 +152,30 @@ def randomGridInitialization():
                 grid[i][j] = 'X'
 
 ###############################################################################
+def boardArrayIndex(i, j):
+    global grid, imax, jmax, nbPlayers, pawns
+    startIdx = -1 # Index of board section dedicated to the symbol
+    if grid[i][j] == ' ':
+        startIdx = nbPlayers * imax * jmax
+    else:
+        startIdx = pawns.index(grid[i][j]) * imax * jmax
+    return startIdx + jmax * i + j
+
+def encodeBoard():
+    global grid, imax, jmax, nbPlayers
+    boardArray = [0] * (imax * jmax * (nbPlayers + 1))
+
+    emptyIdx = nbPlayers * (imax * jmax)
+    for i in range(0, imax):
+        for j in range(0, jmax):
+                boardArray[boardArrayIndex(i,j)] = 1
+
+    print(boardArray)
+
+    return boardArray
+
+
+###############################################################################
 def left(i, j):
     return [i - 1, j]
 
@@ -351,6 +375,9 @@ if testMode:
         announceDraw(longestPath, allPaths)
     else:
         announceWinner(longestPath)
+
+    encodeBoard()
+
     exit()
 
 
