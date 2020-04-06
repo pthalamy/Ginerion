@@ -116,25 +116,25 @@ def stealPawns(i, j, pName):
 
     # Check the 4 pawns opposite to the one just added at (i,j),
     #  and steal the pawns in between if the symbols match
-    if i < imax - 2 and grid[i + 2][j] == pawn and grid[i + 1][j] != ' ':
+    if i < imax - 2 and grid[i + 2][j] == pawn and grid[i + 1][j] != ' ' and grid[i + 1][j] != pawn:
         print(stylize(f"{pName} has stolen pawn {grid[i + 1][j]} at [{i + 1},{j}] !",pawnStyle[pawns.index(grid[i + 1][j])]))
         grid[i + 1][j] = pawn
         stolen.append([i + 1, j])
 
-    if i > 1 and grid[i - 2][j] == pawn and grid[i - 1][j] != ' ':
+    if i > 1 and grid[i - 2][j] == pawn and grid[i - 1][j] != ' ' and grid[i - 1][j] != pawn:
         print(stylize(f"{pName} has stolen pawn {grid[i - 1][j]} at [{i - 1},{j}] !",
                       pawnStyle[pawns.index(grid[i - 1][j])]))
         grid[i - 1][j] = pawn
         stolen.append([i - 1, j])
 
-    if j < jmax - 2 and grid[i][j + 2] == pawn and grid[i][j + 1] != ' ':
+    if j < jmax - 2 and grid[i][j + 2] == pawn and grid[i][j + 1] != ' ' and grid[i][j + 1] != pawn:
         print(stylize(f"{pName} has stolen pawn {grid[i][j + 1]} at [{i},{j + 1}] !",
                       pawnStyle[pawns.index(grid[i][j + 1])]))
         grid[i][j + 1] = pawn
         stolen.append([i, j + 1])
 
 
-    if j > 1 and grid[i][j - 2] == pawn and grid[i][j - 1] != ' ':
+    if j > 1 and grid[i][j - 2] == pawn and grid[i][j - 1] != ' ' and grid[i][j - 1] != pawn:
         print(stylize(f"{pName} has stolen pawn {grid[i][j - 1]} at [{i},{j - 1}] !",
                       pawnStyle[pawns.index(grid[i][j - 1])]))
         grid[i][j - 1] = pawn
@@ -296,25 +296,25 @@ class Player(threading.Thread):
                 else:
                     # Player is a human
                     # self.chx = ajouer(self.pion)
-                    ch=self.getName() + " plays cell (e.g., '[0,2]'): "
+                    ch=self.getName() + " plays cell (e.g., '[1,2]'): "
                     while True:
                         self.move = input(ch)
-                        # try:
-                        # player has entered a line, column couple
-                        x = eval(self.move)
-                        if ((type(x) == list or type(x) == tuple) and len(x) == 2) \
-                           and (0 <= x[0] < imax) and (0 <= x[1] < jmax) \
-                           and grid[x[0]][x[1]] == ' ':
-                            grid[x[0]][x[1]] = self.pawn
-                            # Perform stealing checks and update grid
-                            stolen = stealPawns(x[0], x[1], self.getName())
-                            break
-                        else:
-                            raise Exception()
-                        # except:
-                        #     # ici, le choix entré n'est pas correct
-                        #     print("--> incorrect move. FORMAT: 'line, col' or '[line, col]'")
-                        #     pass
+                        try:
+                            # player has entered a line, column couple
+                            x = eval(self.move)
+                            if ((type(x) == list or type(x) == tuple) and len(x) == 2) \
+                               and (0 < x[0] <= imax) and (0 < x[1] <= jmax) \
+                               and grid[x[0] - 1][x[1] - 1] == ' ':
+                                grid[x[0] - 1][x[1] - 1] = self.pawn
+                                # Perform stealing checks and update grid
+                                stolen = stealPawns(x[0] - 1, x[1] - 1, self.getName())
+                                break
+                            else:
+                                raise Exception()
+                        except:
+                            # ici, le choix entré n'est pas correct
+                            print("--> incorrect move. FORMAT: 'line, col' or '[line, col]' (i,j) \in [1..4]")
+                            pass
 
             ##### => end of player turn
 
